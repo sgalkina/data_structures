@@ -37,6 +37,34 @@ template <typename T> struct vector {
   T &operator[](size_t index);
 
 private:
-  // TODO:
+  size_t capacity_;
+  T * array_;
+  size_t size_;
 };
+
+template <typename T>
+vector<T>::vector()
+  : capacity_(0)
+  , array_()
+  , size_(0)
+{
+  array_ = new T[capacity_];
+}
+
+template <typename T>
+vector<T>::~vector()
+{
+  delete[] array_;
+}
+
+template <typename T>
+size_t vector<T>::capacity() const {
+  return capacity_;
+}
+
+template <typename T>
+size_t vector<T>::size() const {
+  return size_;
+}
+
 }

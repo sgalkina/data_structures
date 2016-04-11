@@ -4,12 +4,6 @@ Data structures C++ implementation study project.
 * tree_map
 * hash_map
 
-To run
-```
-make all
-./bin/main
-```
-
 To test
 ```
 make test
