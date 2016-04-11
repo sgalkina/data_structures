@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <algorithm>
 
 namespace gtl {
 
@@ -65,6 +66,19 @@ size_t vector<T>::capacity() const {
 template <typename T>
 size_t vector<T>::size() const {
   return size_;
+}
+
+template <typename T>
+void vector<T>::push_back(T &&el) {
+  if (size_ == capacity_) {
+    capacity_ *= 2;
+    if (capacity_ == 0) capacity_ = 1;
+    T * new_array = new T[capacity_];
+    std::copy(array_, array_ + size_ - 1, new_array);
+    array_ = new_array;
+  }
+  array_[size_] = el;
+  ++size_;
 }
 
 }
