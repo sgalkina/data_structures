@@ -1,16 +1,22 @@
 #include <assert.h>
+#include <stddef.h>
 #include <iostream>
 #include "vector.h"
+#include "memcheck.h"
 
 void vector_smoketest() {
-  gtl::vector<int> vect;
+  gtl::vector<memcheck> vect;
   assert(vect.capacity() == 0);
   assert(vect.size() == 0);
-  vect.push_back(0);
-  vect.push_back(1);
-  vect.push_back(2);
-  assert(vect.capacity() == 4);
-  assert(vect.size() == 3);
+  size_t n = 5;
+  for (size_t i = 1; i <= n; ++i) {
+    memcheck el;
+    vect.push_back(el);
+  }
+  assert(vect[0].get_counter() == vect.capacity());
+  assert(vect.capacity() == 8);
+  assert(vect.size() == n);
+  std::cout << "OK" << std::endl;
 }
 
 int main(int argc, char* argv[]) {
