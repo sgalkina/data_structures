@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <algorithm>
 #include <iostream>
+#include <memory>
 
 namespace gtl {
 
@@ -39,7 +40,9 @@ template <typename T> struct vector {
   T &operator[](size_t index);
 
 private:
+  vector(size_t n);
   T &get_by_index(size_t index);
+  void reallocate();
 
   size_t capacity_;
   T * array_;
@@ -52,13 +55,31 @@ vector<T>::vector()
   , array_()
   , size_(0)
 {
-  array_ = new T[capacity_];
+  array_ = nullptr;
+}
+
+template <typename T>
+vector<T>::vector(size_t n)
+  : capacity_(n)
+  , array_()
+  , size_(0)
+{
+  array_ = reinterpret_cast<T*>(new char[capacity_*sizeof(T)]);
+}
+
+template <typename T>
+vector<T> vector<T>::reserve(size_t n) {
+  vector<T> vect(n);
+  return vect;
 }
 
 template <typename T>
 vector<T>::~vector()
 {
-  delete[] array_;
+  for (size_t i = 0; i < size_; ++i) {
+    array_[i].~T();
+  }
+  delete[] reinterpret_cast<char *>(array_);
 }
 
 template <typename T>
@@ -72,17 +93,25 @@ size_t vector<T>::size() const {
 }
 
 template <typename T>
-void vector<T>::push_back(T const &el) {
-  if (size_ == capacity_) {
-    capacity_ *= 2;
-    if (capacity_ == 0) capacity_ = 1;
-    T * new_array = new T[capacity_];
-    std::copy(array_, array_ + size_ - 1, new_array);
-    delete[] array_;
-    array_ = new_array;
+void vector<T>::reallocate() {
+  capacity_ > 0 ? capacity_ *= 2 : capacity_ = 1;
+  T * new_array = reinterpret_cast<T *>(new char[capacity_*sizeof(T)]);
+  for (size_t i = 0; i < size_; ++i) {
+    new(reinterpret_cast<void *>(new_array + i)) T(std::move(array_[i]));
   }
-  array_[size_] = el;
-  ++size_;
+  for (size_t i = 0; i < size_; ++i) {
+    array_[i].~T();
+  }
+  delete[] reinterpret_cast<char *>(array_);
+  array_ = new_array;
+}
+
+template <typename T>
+void vector<T>::push_back(T const & el) {
+  if (size_ == capacity_) {
+    reallocate();
+  }
+  new(reinterpret_cast<void *>(array_ + size_++)) T(el);
 }
 
 template <typename T>

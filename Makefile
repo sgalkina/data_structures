@@ -2,7 +2,7 @@ CPP_FLAGS=-O2 -Wall -Werror -std=c++11
 
 test: bin/test
 
-bin/test: bin/main.o bin/memcheck.o
+bin/test: bin/memcheck.o bin/main.o 
 	clang++ -o bin/test $(CPP_FLAGS) bin/main.o bin/memcheck.o
 
 bin/main.o: src/main.cpp src/vector.h src/memcheck.h

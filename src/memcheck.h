@@ -3,10 +3,16 @@
 struct memcheck {
   memcheck();
   ~memcheck();
+  // memcheck(memcheck const & obj);
+  memcheck(memcheck && other);
+  memcheck(memcheck const & other);
 
-  size_t get_counter() const;
+  memcheck& operator=(memcheck other);
+
+  static size_t get_counter();
 
 private:
+  void swap(memcheck & other);
   static size_t counter;
   int value_;
 
