@@ -16,15 +16,34 @@ void vector_smoketest() {
   size_t n = 20;
   for (size_t i = 1; i <= n; ++i) {
     memcheck el;
-    vect.push_back(el);
+    vect.push_back(std::move(el));
   }
   assert(memcheck::get_counter() == vect.size());
   assert(vect.size() == n);
-  std::cout << "OK" << std::endl;
+}
+
+void vector_value_semantics() {
+  gtl::vector<memcheck> vect;
+  size_t n = 100;
+  for (size_t i = 1; i <= n; ++i) {
+    memcheck el;
+    vect.push_back(el);
+  }
+  size_t old_counter = memcheck::get_counter();
+  gtl::vector<memcheck> vect2(vect);
+  assert(memcheck::get_counter() == old_counter*2);
+  gtl::vector<memcheck> vect3(std::move(vect));
+  assert(memcheck::get_counter() == old_counter*2);
+  gtl::vector<memcheck> vect4;
+  vect4 = vect3;
+  assert(memcheck::get_counter() == old_counter*3);
+  vect4 = std::move(vect3);
 }
 
 int main(int argc, char* argv[]) {
   vector_smoketest();
   vector_reservetest();
+  vector_value_semantics();
+  std::cout << "OK" << std::endl;
   return 0;
 }

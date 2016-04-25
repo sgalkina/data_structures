@@ -52,11 +52,9 @@ private:
 template <typename T>
 vector<T>::vector()
   : capacity_(0)
-  , array_()
+  , array_(nullptr)
   , size_(0)
-{
-  array_ = nullptr;
-}
+{}
 
 template <typename T>
 vector<T>::vector(size_t n)
@@ -65,6 +63,51 @@ vector<T>::vector(size_t n)
   , size_(0)
 {
   array_ = reinterpret_cast<T*>(new char[capacity_*sizeof(T)]);
+}
+
+template <typename T>
+vector<T>::vector(vector const & other)
+  : capacity_(other.capacity_)
+  , array_()
+  , size_(other.size_)
+{
+  array_ = reinterpret_cast<T *>(new char[capacity_*sizeof(T)]);
+  for (size_t i = 0; i < size_; ++i) {
+    new(reinterpret_cast<void *>(array_ + i)) T(other.array_[i]);
+  }
+}
+
+template <typename T>
+void vector<T>::swap(vector &other) {
+  std::swap(capacity_, other.capacity_);
+  std::swap(array_, other.array_);
+  std::swap(size_, other.size_);
+}
+
+template <typename T>
+vector<T>::vector(vector && other)
+  : capacity_()
+  , array_()
+  , size_()
+{
+  swap(other);
+}
+
+template <typename T>
+vector<T> & vector<T>::operator=(vector const & other) {
+  capacity_ = other.capacity_;
+  array_ = reinterpret_cast<T *>(new char[capacity_*sizeof(T)]);
+  size_ = other.size_;
+  for (size_t i = 0; i < size_; ++i) {
+    new(reinterpret_cast<void *>(array_ + i)) T(other.array_[i]);
+  }
+  return *this;
+}
+
+template <typename T>
+vector<T> & vector<T>::operator=(vector && other) {
+  swap(other);
+  return *this;
 }
 
 template <typename T>
@@ -112,6 +155,14 @@ void vector<T>::push_back(T const & el) {
     reallocate();
   }
   new(reinterpret_cast<void *>(array_ + size_++)) T(el);
+}
+
+template <typename T>
+void vector<T>::push_back(T && el) {
+  if (size_ == capacity_) {
+    reallocate();
+  }
+  new(reinterpret_cast<void *>(array_ + size_++)) T(std::move(el));
 }
 
 template <typename T>
