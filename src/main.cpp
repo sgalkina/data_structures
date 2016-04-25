@@ -4,7 +4,7 @@
 #include "vector.h"
 #include "memcheck.h"
 
-void vector_reservetest() {
+void vector_reserve() {
   auto vect = gtl::vector<memcheck>::reserve(3);
   assert(memcheck::get_counter() == 0);
 }
@@ -20,6 +20,9 @@ void vector_smoketest() {
   }
   assert(memcheck::get_counter() == vect.size());
   assert(vect.size() == n);
+  memcheck el;
+  vect[10] = el;
+  assert(vect[vect.size() - 1].get_counter() == vect.size() + 1);
 }
 
 void vector_value_semantics() {
@@ -38,11 +41,12 @@ void vector_value_semantics() {
   vect4 = vect3;
   assert(memcheck::get_counter() == old_counter*3);
   vect4 = std::move(vect3);
+  assert(memcheck::get_counter() == old_counter*3);
 }
 
 int main(int argc, char* argv[]) {
   vector_smoketest();
-  vector_reservetest();
+  vector_reserve();
   vector_value_semantics();
   std::cout << "OK" << std::endl;
   return 0;
