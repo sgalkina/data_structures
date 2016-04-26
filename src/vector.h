@@ -191,4 +191,10 @@ T vector<T>::pop_back() {
   return last_element;
 }
 
+template <typename T>
+void vector<T>::swap_remove(size_t index) {
+  std::swap(array_[size_ - 1], array_[index]);
+  pop_back();
+}
+
 }  // namespace gtl

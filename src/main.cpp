@@ -56,6 +56,18 @@ void vector_removal_operations() {
     vect.pop_back();
   }
   assert(memcheck::get_counter() == 0);
+
+  gtl::vector<int> vect_int;
+  int el = 100;
+  vect_int.push_back(el);
+  int int_from_vect = vect_int.pop_back();
+  assert(int_from_vect == el);
+
+  vect_int.push_back(1);
+  vect_int.push_back(2);
+  vect_int.swap_remove(0);
+  assert(vect_int.size() == 1);
+  assert(vect_int[0] == 2);
 }
 
 int main(int argc, char* argv[]) {
