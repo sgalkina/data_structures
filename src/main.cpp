@@ -44,10 +44,25 @@ void vector_value_semantics() {
   assert(memcheck::get_counter() == old_counter*3);
 }
 
+void vector_removal_operations() {
+  gtl::vector<memcheck> vect;
+  size_t n = 3;
+  for (size_t i = 1; i <= n; ++i) {
+    memcheck el;
+    vect.push_back(el);
+  }
+  assert(memcheck::get_counter() == n);
+  for (size_t i = 1; i <= n; ++i) {
+    vect.pop_back();
+  }
+  assert(memcheck::get_counter() == 0);
+}
+
 int main(int argc, char* argv[]) {
   vector_smoketest();
   vector_reserve();
   vector_value_semantics();
+  vector_removal_operations();
   std::cout << "OK" << std::endl;
   return 0;
 }

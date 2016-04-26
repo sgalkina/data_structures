@@ -96,6 +96,9 @@ vector<T>::vector(vector && other)
 template <typename T>
 vector<T> & vector<T>::operator=(vector const & other) {
   capacity_ = other.capacity_;
+  for (size_t i = 0; i < size_; ++i) {
+    array_[i].~T();
+  }
   array_ = reinterpret_cast<T *>(new char[capacity_*sizeof(T)]);
   size_ = other.size_;
   for (size_t i = 0; i < size_; ++i) {
@@ -137,7 +140,7 @@ size_t vector<T>::size() const {
 
 template <typename T>
 void vector<T>::reallocate() {
-  capacity_ > 0 ? capacity_ *= 2 : capacity_ = 1;
+  capacity_ = capacity_ > 0 ? capacity_ * 2 : 1;
   T * new_array = reinterpret_cast<T *>(new char[capacity_*sizeof(T)]);
   for (size_t i = 0; i < size_; ++i) {
     new(reinterpret_cast<void *>(new_array + i)) T(std::move(array_[i]));
@@ -177,8 +180,15 @@ T const & vector<T>::operator[](size_t index) const {
 }
 
 template <typename T>
-T &vector<T>::operator[](size_t index) {
+T & vector<T>::operator[](size_t index) {
   return get_by_index(index);
+}
+
+template <typename T>
+T vector<T>::pop_back() {
+  T last_element = std::move(array_[--size_]);
+  array_[size_].~T();
+  return last_element;
 }
 
 }  // namespace gtl
