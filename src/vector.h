@@ -94,15 +94,8 @@ vector<T>::vector(vector && other)
 
 template <typename T>
 vector<T> & vector<T>::operator=(vector const & other) {
-  capacity_ = other.capacity_;
-  for (size_t i = 0; i < size_; ++i) {
-    array_[i].~T();
-  }
-  array_ = reinterpret_cast<T *>(new char[capacity_*sizeof(T)]);
-  size_ = other.size_;
-  for (size_t i = 0; i < size_; ++i) {
-    new(reinterpret_cast<void *>(array_ + i)) T(other.array_[i]);
-  }
+  vector<T> temp(other);
+  swap(temp);
   return *this;
 }
 
@@ -140,15 +133,8 @@ size_t vector<T>::size() const {
 template <typename T>
 void vector<T>::reallocate() {
   capacity_ = capacity_ > 0 ? capacity_ * 2 : 1;
-  T * new_array = reinterpret_cast<T *>(new char[capacity_*sizeof(T)]);
-  for (size_t i = 0; i < size_; ++i) {
-    new(reinterpret_cast<void *>(new_array + i)) T(std::move(array_[i]));
-  }
-  for (size_t i = 0; i < size_; ++i) {
-    array_[i].~T();
-  }
-  delete[] reinterpret_cast<char *>(array_);
-  array_ = new_array;
+  vector<T> temp(*this);
+  *this = std::move(temp);
 }
 
 template <typename T>
