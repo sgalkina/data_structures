@@ -41,7 +41,6 @@ template <typename T> struct vector {
 
 private:
   vector(size_t n);
-  T &get_by_index(size_t index);
   void reallocate();
 
   size_t capacity_;
@@ -168,24 +167,22 @@ void vector<T>::push_back(T && el) {
   new(reinterpret_cast<void *>(array_ + size_++)) T(std::move(el));
 }
 
+
 template <typename T>
-T &vector<T>::get_by_index(size_t index) {
+T const & vector<T>::operator[](size_t index) const {
   assert(index >= 0 && index < size_ && "Out of bound");
   return array_[index];
 }
 
 template <typename T>
-T const & vector<T>::operator[](size_t index) const {
-  return get_by_index(index);
-}
-
-template <typename T>
 T & vector<T>::operator[](size_t index) {
-  return get_by_index(index);
+  assert(index >= 0 && index < size_ && "Out of bound");
+  return array_[index];
 }
 
 template <typename T>
 T vector<T>::pop_back() {
+  assert(size_ != 0 && "Empty vector");
   T last_element = std::move(array_[--size_]);
   array_[size_].~T();
   return last_element;
@@ -193,6 +190,7 @@ T vector<T>::pop_back() {
 
 template <typename T>
 void vector<T>::swap_remove(size_t index) {
+  assert(size_ != 0 && "Empty vector");
   std::swap(array_[size_ - 1], array_[index]);
   pop_back();
 }

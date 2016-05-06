@@ -22,7 +22,8 @@ void vector_smoketest() {
   assert(vect.size() == n);
   memcheck el;
   vect[10] = el;
-  assert(vect[vect.size() - 1].get_counter() == vect.size() + 1);
+  const gtl::vector<memcheck> vect2(vect);
+  memcheck by_index = vect2[0];
 }
 
 void vector_value_semantics() {
