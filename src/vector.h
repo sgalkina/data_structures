@@ -156,13 +156,13 @@ void vector<T>::push_back(T && el) {
 
 template <typename T>
 T const & vector<T>::operator[](size_t index) const {
-  assert(index >= 0 && index < size_ && "Out of bound");
+  assert(index < size_ && "Out of bound");
   return array_[index];
 }
 
 template <typename T>
 T & vector<T>::operator[](size_t index) {
-  assert(index >= 0 && index < size_ && "Out of bound");
+  assert(index < size_ && "Out of bound");
   return array_[index];
 }
 
@@ -177,6 +177,7 @@ T vector<T>::pop_back() {
 template <typename T>
 void vector<T>::swap_remove(size_t index) {
   assert(size_ != 0 && "Empty vector");
+  assert(index < size_ && "Out of bound");
   std::swap(array_[size_ - 1], array_[index]);
   pop_back();
 }
