@@ -1,7 +1,7 @@
 #include <stddef.h>
 
 namespace gtl {
-  template <typename K, typename V> struct vector_set {
+  template <typename K, typename V> struct vector_map {
     // TODO: special function prototypes
 
     size_t size() const;
