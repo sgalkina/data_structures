@@ -41,7 +41,8 @@ void vector_value_semantics() {
   gtl::vector<memcheck> vect4;
   vect4 = vect3;
   assert(memcheck::get_counter() == old_counter*3);
-  vect4 = std::move(vect3);
+  gtl::vector<memcheck> vect5;
+  vect5 = std::move(vect3);
   assert(memcheck::get_counter() == old_counter*3);
 }
 

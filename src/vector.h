@@ -19,8 +19,7 @@ template <typename T> struct vector {
   static vector reserve(size_t n);
 
   void swap(vector &other);
-  vector &operator=(vector const &other);
-  vector &operator=(vector &&other);
+  vector &operator=(vector other);
 
   ~vector();
 
@@ -93,14 +92,7 @@ vector<T>::vector(vector && other)
 }
 
 template <typename T>
-vector<T> & vector<T>::operator=(vector const & other) {
-  vector<T> temp(other);
-  swap(temp);
-  return *this;
-}
-
-template <typename T>
-vector<T> & vector<T>::operator=(vector && other) {
+vector<T> & vector<T>::operator=(vector other) {
   swap(other);
   return *this;
 }
