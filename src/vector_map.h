@@ -2,7 +2,13 @@
 
 namespace gtl {
   template <typename K, typename V> struct vector_map {
-    // TODO: special function prototypes
+    vector_map();
+    vector_map(vector_map const &other);
+    vector_map(vector_map &&other);
+
+    vector_map &operator=(vector_map other);
+    
+    ~vector_map();
 
     size_t size() const;
 
