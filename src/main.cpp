@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <iostream>
 #include "vector.h"
+#include "vector_map.h"
 #include "memcheck.h"
 
 void vector_reserve() {
@@ -72,11 +73,35 @@ void vector_removal_operations() {
   assert(vect_int[0] == 2);
 }
 
-int main(int argc, char* argv[]) {
+void vector_map_smoketest() {
+  gtl::vector_map<int, int> vect;
+  assert(vect.size() == 0);
+  assert(!vect.contains_key(1));
+  assert(vect.add(1, 100));
+  assert(vect.size() == 1);
+  assert(vect.contains_key(1));
+  int * value = vect.lookup(1);
+  assert(*value == 100);
+  assert(!vect.add(1, 200));
+  int * new_value = vect.lookup(1);
+  assert(*new_value == 200);
+}
+
+void test_vector() {
   vector_smoketest();
   vector_reserve();
   vector_value_semantics();
   vector_removal_operations();
-  std::cout << "OK" << std::endl;
+  std::cout << "Vector OK" << std::endl;
+}
+
+void test_vector_map() {
+  vector_map_smoketest();
+  std::cout << "Vector Map OK" << std::endl;
+}
+
+int main(int argc, char* argv[]) {
+  test_vector();
+  test_vector_map();
   return 0;
 }
