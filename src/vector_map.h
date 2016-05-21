@@ -41,7 +41,7 @@ size_t vector_map<K, V>::size() const {
 }
 
 template <typename K, typename V>
-V * vector_map<K, V>::lookup(K const &key) {
+V const * vector_map<K, V>::lookup(K const &key) const {
   for (size_t i = 0; i < size(); ++i) {
     if (vector_[i].key == key) return &vector_[i].value;
   }
@@ -49,11 +49,8 @@ V * vector_map<K, V>::lookup(K const &key) {
 }
 
 template <typename K, typename V>
-V const * vector_map<K, V>::lookup(K const &key) const {
-  for (size_t i = 0; i < size(); ++i) {
-    if (vector_[i].key == key) return &vector_[i].value;
-  }
-  return nullptr;
+V * vector_map<K, V>::lookup(K const &key) {
+  return const_cast<V *>(static_cast<const vector_map<K, V> *>(this)->lookup(key));
 }
 
 template <typename K, typename V>
