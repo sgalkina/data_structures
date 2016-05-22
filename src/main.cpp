@@ -27,6 +27,21 @@ void vector_smoketest() {
   memcheck by_index = vect2[0];
 }
 
+template <typename T>
+void value_semantics(T & obj) {
+  size_t old_counter = memcheck::get_counter();
+  T obj2(obj);
+  assert(memcheck::get_counter() == old_counter*2);
+  T obj3(std::move(obj));
+  assert(memcheck::get_counter() == old_counter*2);
+  T obj4;
+  obj4 = obj3;
+  assert(memcheck::get_counter() == old_counter*3);
+  T obj5;
+  obj5 = std::move(obj3);
+  assert(memcheck::get_counter() == old_counter*3);
+}
+
 void vector_value_semantics() {
   gtl::vector<memcheck> vect;
   size_t n = 100;
@@ -34,17 +49,17 @@ void vector_value_semantics() {
     memcheck el;
     vect.push_back(el);
   }
-  size_t old_counter = memcheck::get_counter();
-  gtl::vector<memcheck> vect2(vect);
-  assert(memcheck::get_counter() == old_counter*2);
-  gtl::vector<memcheck> vect3(std::move(vect));
-  assert(memcheck::get_counter() == old_counter*2);
-  gtl::vector<memcheck> vect4;
-  vect4 = vect3;
-  assert(memcheck::get_counter() == old_counter*3);
-  gtl::vector<memcheck> vect5;
-  vect5 = std::move(vect3);
-  assert(memcheck::get_counter() == old_counter*3);
+  value_semantics(vect);
+}
+
+void vector_map_value_semantics() {
+  gtl::vector_map<int, memcheck> vect_map;
+  size_t n = 100;
+  for (size_t i = 1; i <= n; ++i) {
+    memcheck el;
+    vect_map.add(i, el);
+  }
+  value_semantics(vect_map);
 }
 
 void vector_removal_operations() {
@@ -88,6 +103,8 @@ void vector_map_smoketest() {
   assert(vect.remove(1));
   assert(!vect.remove(1));
   assert(vect.size() == 0);
+  int * empty_value = vect.lookup(1);
+  assert(!bool(empty_value));
 }
 
 void test_vector() {
@@ -100,6 +117,7 @@ void test_vector() {
 
 void test_vector_map() {
   vector_map_smoketest();
+  vector_map_value_semantics();
   std::cout << "Vector Map OK" << std::endl;
 }
 

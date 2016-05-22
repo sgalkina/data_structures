@@ -9,6 +9,7 @@ template <typename K, typename V> struct vector_map {
   vector_map(vector_map const &other);
   vector_map(vector_map &&other);
 
+  void swap(vector_map &other);
   vector_map &operator=(vector_map other);
 
   size_t size() const;
@@ -36,6 +37,29 @@ template <typename K, typename V>
 vector_map<K, V>::vector_map()
   : vector_()
 {}
+
+template <typename K, typename V>
+void vector_map<K, V>::swap(vector_map &other) {
+  std::swap(vector_, other.vector_);
+}
+
+template <typename K, typename V>
+vector_map<K, V>::vector_map(vector_map const &other)
+  : vector_(other.vector_)
+{}
+
+template <typename K, typename V>
+vector_map<K, V>::vector_map(vector_map && other)
+  : vector_()
+{
+  swap(other);
+}
+
+template <typename K, typename V>
+vector_map<K, V> & vector_map<K, V>::operator=(vector_map other) {
+  swap(other);
+  return *this;
+}
 
 template <typename K, typename V>
 size_t vector_map<K, V>::size() const {
