@@ -85,6 +85,9 @@ void vector_map_smoketest() {
   assert(!vect.add(1, 200));
   int * new_value = vect.lookup(1);
   assert(*new_value == 200);
+  assert(vect.remove(1));
+  assert(!vect.remove(1));
+  assert(vect.size() == 0);
 }
 
 void test_vector() {
