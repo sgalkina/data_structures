@@ -3,6 +3,7 @@
 #include <iostream>
 #include "vector.h"
 #include "vector_map.h"
+#include "hash_map.h"
 #include "memcheck.h"
 #include "test_map.h"
 
@@ -82,8 +83,12 @@ void test_vector_map() {
 
 void map_comparison() {
   gtl::map_comparison_test< gtl::vector_map<int, int>, gtl::vector_map<int, int> > test;
-  test.compare_implementations();
-  std::cout << "Map Comparison OK" << std::endl;
+  test.compare_add();
+  test.compare_remove();
+  std::cout << "vector_map vs vector_map OK" << std::endl;
+  gtl::map_comparison_test< gtl::vector_map<int, int>, gtl::hash_map<int, int> > test_diff;
+  test_diff.compare_add();
+  std::cout << "vector_map vs hash_map OK" << std::endl;
 }
 
 int main(int argc, char* argv[]) {

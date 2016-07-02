@@ -66,21 +66,28 @@ void smoketest_map<T>::value_semantics() {
  * Comparison test class for map implementations
  */
 template <typename T, typename U> struct map_comparison_test {
-  void compare_implementations();
+  void compare_add();
+  void compare_remove();
 };
 
 template <typename T, typename U>
-void map_comparison_test<T, U>::compare_implementations() {
+void map_comparison_test<T, U>::compare_add() {
   T map1;
   U map2;
   int MAX = 10;
-  size_t n_elements = MAX*MAX;
-  for (size_t i = 0; i < n_elements; ++i) {
+  for (size_t i = 0; i < MAX*MAX; ++i) {
     int element = rand() % MAX;
     assert(map1.add(element, element) == map2.add(element, element));
     assert(map1.add(element, element*2) == map2.add(element, element*2));
   }
-  for (size_t i = 0; i < n_elements; ++i) {
+}
+
+template <typename T, typename U>
+void map_comparison_test<T, U>::compare_remove() {
+  T map1;
+  U map2;
+  int MAX = 10;
+  for (size_t i = 0; i < MAX*MAX; ++i) {
     int element = rand() % MAX;
     assert(map1.remove(element) == map2.remove(element));
   }
