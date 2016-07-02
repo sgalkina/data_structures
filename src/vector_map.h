@@ -23,7 +23,7 @@ template <typename K, typename V> struct vector_map {
   bool contains_key(K const &key) const;
 
 private:
-  long long find(K const & key) const;
+  size_t find(K const & key) const;
 
   struct Entry {
       K key;
@@ -67,22 +67,22 @@ size_t vector_map<K, V>::size() const {
 }
 
 template <typename K, typename V>
-long long vector_map<K, V>::find(K const &key) const {
+size_t vector_map<K, V>::find(K const &key) const {
   for (size_t i = 0; i < size(); ++i) {
     if (vector_[i].key == key) return i;
   }
-  return -1;
+  return size();
 }
 
 template <typename K, typename V>
 bool vector_map<K, V>::contains_key(K const &key) const {
-  return find(key) != -1;
+  return find(key) < size();
 }
 
 template <typename K, typename V>
 V const * vector_map<K, V>::lookup(K const &key) const {
   int index = find(key);
-  if (index == -1) return nullptr;
+  if (index == size()) return nullptr;
   return &vector_[index].value;
 }
 
@@ -105,8 +105,8 @@ bool vector_map<K, V>::add(K const &key, V value) {
 
 template <typename K, typename V>
 bool vector_map<K, V>::remove(K const &key) {
-  long long index = find(key);
-  if (index == -1) return false;
+  size_t index = find(key);
+  if (index == size()) return false;
   vector_.swap_remove(index);
   return true;
 }
