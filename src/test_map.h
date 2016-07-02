@@ -6,12 +6,12 @@ namespace gtl {
  * Test class for map implementations
  */
 template <typename T> struct test_map {
-  void add_remove();
+  void smoketest();
   void value_semantics();
 };
 
 template <typename T>
-void test_map<T>::add_remove() {
+void test_map<T>::smoketest() {
   T map;
   assert(map.size() == 0);
   assert(!map.contains_key(1));

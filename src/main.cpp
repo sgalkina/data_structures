@@ -74,7 +74,7 @@ void test_vector() {
 
 void test_vector_map() {
   gtl::test_map< gtl::vector_map<int, int> > test;
-  test.add_remove();
+  test.smoketest();
   gtl::test_map< gtl::vector_map<int, memcheck> > test_value;
   test_value.value_semantics();
   std::cout << "Vector Map OK" << std::endl;
