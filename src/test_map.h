@@ -1,17 +1,20 @@
 #pragma once
+#include <iostream>
+#include <assert.h>
+#include <stdlib.h>
 
 namespace gtl {
 
 /*
- * Test class for map implementations
+ * Smoketest class for map implementations
  */
-template <typename T> struct test_map {
+template <typename T> struct smoketest_map {
   void smoketest();
   void value_semantics();
 };
 
 template <typename T>
-void test_map<T>::smoketest() {
+void smoketest_map<T>::smoketest() {
   T map;
   assert(map.size() == 0);
   assert(!map.contains_key(1));
@@ -49,7 +52,7 @@ void value_semantics_memory_test(T & obj) {
 }
 
 template <typename T>
-void test_map<T>::value_semantics() {
+void smoketest_map<T>::value_semantics() {
   T vect_map;
   size_t n = 100;
   for (size_t i = 1; i <= n; ++i) {
@@ -57,6 +60,30 @@ void test_map<T>::value_semantics() {
     vect_map.add(i, el);
   }
   value_semantics_memory_test(vect_map);
+}
+
+/*
+ * Comparison test class for map implementations
+ */
+template <typename T, typename U> struct map_comparison_test {
+  void compare_implementations();
+};
+
+template <typename T, typename U>
+void map_comparison_test<T, U>::compare_implementations() {
+  T map1;
+  U map2;
+  int MAX = 10;
+  size_t n_elements = MAX*MAX;
+  for (size_t i = 0; i < n_elements; ++i) {
+    int element = rand() % MAX;
+    assert(map1.add(element, element) == map2.add(element, element));
+    assert(map1.add(element, element*2) == map2.add(element, element*2));
+  }
+  for (size_t i = 0; i < n_elements; ++i) {
+    int element = rand() % MAX;
+    assert(map1.remove(element) == map2.remove(element));
+  }
 }
 
 }

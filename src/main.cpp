@@ -73,15 +73,22 @@ void test_vector() {
 }
 
 void test_vector_map() {
-  gtl::test_map< gtl::vector_map<int, int> > test;
+  gtl::smoketest_map< gtl::vector_map<int, int> > test;
   test.smoketest();
-  gtl::test_map< gtl::vector_map<int, memcheck> > test_value;
+  gtl::smoketest_map< gtl::vector_map<int, memcheck> > test_value;
   test_value.value_semantics();
   std::cout << "Vector Map OK" << std::endl;
+}
+
+void map_comparison() {
+  gtl::map_comparison_test< gtl::vector_map<int, int>, gtl::vector_map<int, int> > test;
+  test.compare_implementations();
+  std::cout << "Map Comparison OK" << std::endl;
 }
 
 int main(int argc, char* argv[]) {
   test_vector();
   test_vector_map();
+  map_comparison();
   return 0;
 }
