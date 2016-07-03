@@ -88,6 +88,7 @@ void map_comparison() {
   std::cout << "vector_map vs vector_map OK" << std::endl;
   gtl::map_comparison_test< gtl::vector_map<int, int>, gtl::hash_map<int, int> > test_diff;
   test_diff.compare_add();
+  test_diff.compare_remove();
   std::cout << "vector_map vs hash_map OK" << std::endl;
 }
 

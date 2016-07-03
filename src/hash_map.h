@@ -17,6 +17,7 @@ namespace gtl {
     size_t size() const;
 
     bool add(K const &key, V value);
+    bool remove(K const &key);
 
     V const* lookup(K const &key) const;
     V * lookup(K const &key);
@@ -41,8 +42,8 @@ hash_map<K, V>::hash_map()
   : vector_()
 {
   for (size_t i = 0; i < INITIAL_SIZE; ++i) {
-    Entry new_entry = {K(), V(), true};
-    vector_.push_back(new_entry);
+    Entry empty_entry = {K(), V(), true};
+    vector_.push_back(empty_entry);
   }
 }
 
@@ -102,6 +103,15 @@ bool hash_map<K, V>::add(K const &key, V value) {
   }
   Entry new_entry = {key, value, false};
   vector_.push_back(new_entry);
+  return true;
+}
+
+template <typename K, typename V>
+bool hash_map<K, V>::remove(K const &key) {
+  size_t index = find(key);
+  if (index == size()) return false;
+  Entry empty_entry = {K(), V(), true};
+  vector_[index] = empty_entry;
   return true;
 }
 
