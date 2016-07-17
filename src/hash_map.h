@@ -24,6 +24,8 @@ namespace gtl {
     V * lookup(K const &key);
 
     bool contains_key(K const &key) const;
+
+    void print() const;
   private:
     struct Entry {
         K key;
@@ -36,15 +38,17 @@ namespace gtl {
     size_t hash(K const & key) const;
     size_t find(K const & key) const;
     bool is_overloaded() const;
-    bool reallocate();
+    void reallocate();
     bool add_to_vector(K const &key, V value, vector<Entry> & vect);
 
+    size_t size_;
   };
 
 
 template <typename K, typename V>
 hash_map<K, V>::hash_map()
   : vector_()
+  , size_()
 {
 }
 
@@ -73,12 +77,18 @@ hash_map<K, V> & hash_map<K, V>::operator=(hash_map other) {
 
 template <typename K, typename V>
 size_t hash_map<K, V>::size() const {
-  return vector_.size();
+  return size_;
+}
+
+template <typename K, typename V>
+size_t hash_map<K, V>::capacity() const {
+  return vector_.capacity();
 }
 
 template <typename K, typename V>
 size_t hash_map<K, V>::hash(K const &key) const {
-  return key % capacity_;
+  if (capacity() == 0) return 0;
+  return key % capacity();
 }
 
 template <typename K, typename V>
@@ -93,12 +103,18 @@ size_t hash_map<K, V>::find(K const &key) const {
 
 template <typename K, typename V>
 bool hash_map<K, V>::add_to_vector(K const &key, V value, vector<Entry> & vect) {
+  std::cout << "key " << key << std::endl;
   size_t initial_hash = hash(key);
+  std::cout << "initial_hash " << initial_hash << std::endl;
+  std::cout << "vect.capacity() " << vect.capacity() << std::endl;
   for (size_t i = initial_hash; i < vect.capacity() + initial_hash; ++i) {
     size_t ind = i % vect.capacity();
     if (vector_[ind].is_empty) {
-      Entry new_entry = {key, value, false};
-      vector_[ind] = new_entry;
+      std::cout << "in is empty " << ind << std::endl;
+
+      vector_[ind].key = key;
+      vector_[ind].value = value;
+      vector_[ind].is_empty = false;
       return true;
     }
     if (vector_[ind].key == key) return false;
@@ -107,15 +123,20 @@ bool hash_map<K, V>::add_to_vector(K const &key, V value, vector<Entry> & vect) 
 }
 
 template <typename K, typename V>
-bool hash_map<K, V>::reallocate() {
+void hash_map<K, V>::reallocate() {
   vector<Entry> new_vector;
   size_t capacity = vector_.capacity() == 0 ? 1 : vector_.capacity()*2;
   new_vector.reserve(capacity);
+  for (size_t i = 0; i < capacity; ++i) {
+    Entry empty_entry = {K(), V(), true};
+    new_vector.push_back(empty_entry);
+  }
   for (size_t i = 0; i < vector_.capacity(); ++i) {
     if (!vector_[i].is_empty) {
       add_to_vector(vector_[i].key, vector_[i].value, new_vector);
     }
   }
+  std::cout << "three " << new_vector.capacity() << std::endl;
   vector_ = new_vector;
 }
 
@@ -124,12 +145,15 @@ bool hash_map<K, V>::add(K const &key, V const &value) {
   if (is_overloaded()) {
     reallocate();
   }
-  return add_to_vector(key, value, vector_);
+  bool result = add_to_vector(key, value, vector_);
+  if (result) size_++;
+  return result;
 }
 
 template <typename K, typename V>
 bool hash_map<K, V>::is_overloaded() const {
-  return capacity_ == 0 || size_/capacity_ >= OVERLOAD_COEF;
+  if (capacity() == 0) return true;
+  return size_/capacity() >= OVERLOAD_COEF;
 }
 
 template <typename K, typename V>
@@ -138,6 +162,7 @@ bool hash_map<K, V>::remove(K const &key) {
   if (index == size()) return false;
   Entry empty_entry = {K(), V(), true};
   vector_[index] = empty_entry;
+  size_--;
   return true;
 }
 
@@ -156,6 +181,20 @@ V const * hash_map<K, V>::lookup(K const &key) const {
 template <typename K, typename V>
 V * hash_map<K, V>::lookup(K const &key) {
   return const_cast<V *>(static_cast<const vector_map<K, V> *>(this)->lookup(key));
+}
+
+
+template <typename K, typename V>
+void hash_map<K, V>::print() const {
+  std::cout << "Capacity is " << vector_.capacity() << ", size is " << size() << std::endl;
+  std::cout << "Elements:" << std::endl;
+  for (size_t i = 0; i < vector_.capacity(); ++i) {
+    if (vector_[i].is_empty) {
+      std::cout << "<empty>" << std::endl;
+    } else {
+      std::cout << vector_[i].key << ": " << vector_[i].value << std::endl;
+    }
+  }
 }
 
 }  // namespace gtl

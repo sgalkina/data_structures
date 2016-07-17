@@ -77,6 +77,10 @@ void map_comparison_test<T, U>::compare_add() {
   int MAX = 10;
   for (size_t i = 0; i < MAX*MAX; ++i) {
     int element = rand() % MAX;
+    map1.add(element, element);
+    map2.add(element, element);
+    map1.print();
+    map2.print();
     assert(map1.add(element, element) == map2.add(element, element));
     assert(map1.add(element, element*2) == map2.add(element, element*2));
   }

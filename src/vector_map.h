@@ -22,6 +22,7 @@ template <typename K, typename V> struct vector_map {
 
   bool contains_key(K const &key) const;
 
+  void print() const;
 private:
   size_t find(K const & key) const;
 
@@ -109,6 +110,15 @@ bool vector_map<K, V>::remove(K const &key) {
   if (index == size()) return false;
   vector_.swap_remove(index);
   return true;
+}
+
+template <typename K, typename V>
+void vector_map<K, V>::print() const {
+  std::cout << "Capacity is " << vector_.capacity() << ", size is " << vector_.size() << std::endl;
+  std::cout << "Elements:" << std::endl;
+  for (size_t i = 0; i < vector_.size(); ++i) {
+    std::cout << vector_[i].key << ": " << vector_[i].value << std::endl;
+  }
 }
 
 }
