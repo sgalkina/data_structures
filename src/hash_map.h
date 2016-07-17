@@ -1,7 +1,7 @@
 #include "vector.h"
 
 namespace gtl {
-  const size_t INITIAL_SIZE = 256;
+  static const float OVERLOAD_COEF = 0.75;
 
   /*
    * Hash table with open addressing and linear probing
@@ -15,8 +15,9 @@ namespace gtl {
     hash_map &operator=(hash_map other);
 
     size_t size() const;
+    size_t capacity() const;
 
-    bool add(K const &key, V value);
+    bool add(K const &key, V const &value);
     bool remove(K const &key);
 
     V const* lookup(K const &key) const;
@@ -24,9 +25,6 @@ namespace gtl {
 
     bool contains_key(K const &key) const;
   private:
-    size_t hash(K const & key) const;
-    size_t find(K const & key) const;
-
     struct Entry {
         K key;
         V value;
@@ -34,6 +32,13 @@ namespace gtl {
     };
 
     vector<Entry> vector_;
+
+    size_t hash(K const & key) const;
+    size_t find(K const & key) const;
+    bool is_overloaded() const;
+    bool reallocate();
+    bool add_to_vector(K const &key, V value, vector<Entry> & vect);
+
   };
 
 
@@ -41,10 +46,6 @@ template <typename K, typename V>
 hash_map<K, V>::hash_map()
   : vector_()
 {
-  for (size_t i = 0; i < INITIAL_SIZE; ++i) {
-    Entry empty_entry = {K(), V(), true};
-    vector_.push_back(empty_entry);
-  }
 }
 
 template <typename K, typename V>
@@ -77,7 +78,7 @@ size_t hash_map<K, V>::size() const {
 
 template <typename K, typename V>
 size_t hash_map<K, V>::hash(K const &key) const {
-  return key % INITIAL_SIZE;
+  return key % capacity_;
 }
 
 template <typename K, typename V>
@@ -91,19 +92,44 @@ size_t hash_map<K, V>::find(K const &key) const {
 }
 
 template <typename K, typename V>
-bool hash_map<K, V>::add(K const &key, V value) {
+bool hash_map<K, V>::add_to_vector(K const &key, V value, vector<Entry> & vect) {
   size_t initial_hash = hash(key);
-  for (size_t i = initial_hash; i < size(); ++i) {
-    if (vector_[i].is_empty) {
+  for (size_t i = initial_hash; i < vect.capacity() + initial_hash; ++i) {
+    size_t ind = i % vect.capacity();
+    if (vector_[ind].is_empty) {
       Entry new_entry = {key, value, false};
-      vector_[i] = new_entry;
+      vector_[ind] = new_entry;
       return true;
     }
-    if (vector_[i].key == key) return false;
+    if (vector_[ind].key == key) return false;
   }
-  Entry new_entry = {key, value, false};
-  vector_.push_back(new_entry);
-  return true;
+  return false;
+}
+
+template <typename K, typename V>
+bool hash_map<K, V>::reallocate() {
+  vector<Entry> new_vector;
+  size_t capacity = vector_.capacity() == 0 ? 1 : vector_.capacity()*2;
+  new_vector.reserve(capacity);
+  for (size_t i = 0; i < vector_.capacity(); ++i) {
+    if (!vector_[i].is_empty) {
+      add_to_vector(vector_[i].key, vector_[i].value, new_vector);
+    }
+  }
+  vector_ = new_vector;
+}
+
+template <typename K, typename V>
+bool hash_map<K, V>::add(K const &key, V const &value) {
+  if (is_overloaded()) {
+    reallocate();
+  }
+  return add_to_vector(key, value, vector_);
+}
+
+template <typename K, typename V>
+bool hash_map<K, V>::is_overloaded() const {
+  return capacity_ == 0 || size_/capacity_ >= OVERLOAD_COEF;
 }
 
 template <typename K, typename V>
