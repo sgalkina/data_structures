@@ -39,6 +39,8 @@ template <typename T> struct vector {
   T const &operator[](size_t index) const;
   T &operator[](size_t index);
 
+  void print() const;
+
 private:
   vector(size_t n);
   void reallocate();
@@ -173,6 +175,19 @@ void vector<T>::swap_remove(size_t index) {
   assert(index < size_ && "Out of bound");
   std::swap(array_[size_ - 1], array_[index]);
   pop_back();
+}
+
+template <typename K>
+void vector<K>::print() const {
+  std::cout << "Vector capacity is " << capacity() << ", size is " << size() << std::endl;
+  std::cout << "Vector elements:" << std::endl;
+  for (size_t i = 0; i < capacity(); ++i) {
+    if (array_[i].is_empty) {
+      std::cout << "<empty>" << std::endl;
+    } else {
+      std::cout << array_[i].key << ": " << array_[i].value << std::endl;
+    }
+  }
 }
 
 }  // namespace gtl

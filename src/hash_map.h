@@ -1,4 +1,5 @@
 #include "vector.h"
+#include <utility>
 
 namespace gtl {
   static const float OVERLOAD_COEF = 0.75;
@@ -35,7 +36,7 @@ namespace gtl {
 
     vector<Entry> vector_;
 
-    size_t hash(K const & key) const;
+    size_t hash(K const & key, size_t capacity) const;
     size_t find(K const & key) const;
     bool is_overloaded() const;
     void reallocate();
@@ -86,14 +87,14 @@ size_t hash_map<K, V>::capacity() const {
 }
 
 template <typename K, typename V>
-size_t hash_map<K, V>::hash(K const &key) const {
-  if (capacity() == 0) return 0;
-  return key % capacity();
+size_t hash_map<K, V>::hash(K const &key, size_t capacity) const {
+  if (capacity == 0) return 0;
+  return key % capacity;
 }
 
 template <typename K, typename V>
 size_t hash_map<K, V>::find(K const &key) const {
-  size_t initial_hash = hash(key);
+  size_t initial_hash = hash(key, vector_.capacity());
   for (size_t i = initial_hash; i < size(); ++i) {
     if (vector_[i].is_empty) return size();
     if (vector_[i].key == key) return i;
@@ -103,22 +104,21 @@ size_t hash_map<K, V>::find(K const &key) const {
 
 template <typename K, typename V>
 bool hash_map<K, V>::add_to_vector(K const &key, V value, vector<Entry> & vect) {
-  std::cout << "key " << key << std::endl;
-  size_t initial_hash = hash(key);
-  std::cout << "initial_hash " << initial_hash << std::endl;
-  std::cout << "vect.capacity() " << vect.capacity() << std::endl;
+  size_t initial_hash = hash(key, vect.capacity());
   for (size_t i = initial_hash; i < vect.capacity() + initial_hash; ++i) {
     size_t ind = i % vect.capacity();
-    if (vector_[ind].is_empty) {
-      std::cout << "in is empty " << ind << std::endl;
-
-      vector_[ind].key = key;
-      vector_[ind].value = value;
-      vector_[ind].is_empty = false;
+    if (vect[ind].is_empty) {
+      vect[ind].key = key;
+      vect[ind].value = value;
+      vect[ind].is_empty = false;
       return true;
     }
-    if (vector_[ind].key == key) return false;
+    if (vect[ind].key == key) {
+      vect[ind].value = value;
+      return false;
+    }
   }
+  std::cout << "EXCEPTION" << std::endl;
   return false;
 }
 
@@ -136,8 +136,7 @@ void hash_map<K, V>::reallocate() {
       add_to_vector(vector_[i].key, vector_[i].value, new_vector);
     }
   }
-  std::cout << "three " << new_vector.capacity() << std::endl;
-  vector_ = new_vector;
+  vector_ = std::move(new_vector);
 }
 
 template <typename K, typename V>
