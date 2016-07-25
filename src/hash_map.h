@@ -32,6 +32,7 @@ namespace gtl {
         K key;
         V value;
         bool is_empty;
+        bool continue_searching;
     };
 
     vector<Entry> vector_;
@@ -95,11 +96,11 @@ size_t hash_map<K, V>::hash(K const &key, size_t capacity) const {
 template <typename K, typename V>
 size_t hash_map<K, V>::find(K const &key) const {
   size_t initial_hash = hash(key, vector_.capacity());
-  for (size_t i = initial_hash; i < size(); ++i) {
-    if (vector_[i].is_empty) return size();
+  for (size_t i = initial_hash; i < capacity(); ++i) {
+    if (vector_[i].is_empty && !vector_[i].continue_searching) return capacity();
     if (vector_[i].key == key) return i;
   }
-  return size();
+  return capacity();
 }
 
 template <typename K, typename V>
@@ -107,14 +108,16 @@ bool hash_map<K, V>::add_to_vector(K const &key, V value, vector<Entry> & vect) 
   size_t initial_hash = hash(key, vect.capacity());
   for (size_t i = initial_hash; i < vect.capacity() + initial_hash; ++i) {
     size_t ind = i % vect.capacity();
-    if (vect[ind].is_empty) {
+    if (vect[ind].is_empty && !vect[ind].continue_searching) {
       vect[ind].key = key;
       vect[ind].value = value;
       vect[ind].is_empty = false;
+      vect[ind].continue_searching = false;
       return true;
     }
     if (vect[ind].key == key) {
       vect[ind].value = value;
+      vect[ind].continue_searching = false;
       return false;
     }
   }
@@ -128,7 +131,7 @@ void hash_map<K, V>::reallocate() {
   size_t capacity = vector_.capacity() == 0 ? 1 : vector_.capacity()*2;
   new_vector.reserve(capacity);
   for (size_t i = 0; i < capacity; ++i) {
-    Entry empty_entry = {K(), V(), true};
+    Entry empty_entry = {K(), V(), true, false};
     new_vector.push_back(empty_entry);
   }
   for (size_t i = 0; i < vector_.capacity(); ++i) {
@@ -152,14 +155,14 @@ bool hash_map<K, V>::add(K const &key, V const &value) {
 template <typename K, typename V>
 bool hash_map<K, V>::is_overloaded() const {
   if (capacity() == 0) return true;
-  return size_/capacity() >= OVERLOAD_COEF;
+  return size()/capacity() >= OVERLOAD_COEF;
 }
 
 template <typename K, typename V>
 bool hash_map<K, V>::remove(K const &key) {
   size_t index = find(key);
-  if (index == size()) return false;
-  Entry empty_entry = {K(), V(), true};
+  if (index == capacity()) return false;
+  Entry empty_entry = {K(), V(), true, true};
   vector_[index] = empty_entry;
   size_--;
   return true;
@@ -167,13 +170,13 @@ bool hash_map<K, V>::remove(K const &key) {
 
 template <typename K, typename V>
 bool hash_map<K, V>::contains_key(K const &key) const {
-  return find(key) < size();
+  return find(key) < capacity();
 }
 
 template <typename K, typename V>
 V const * hash_map<K, V>::lookup(K const &key) const {
   int index = find(key);
-  if (index == size()) return nullptr;
+  if (index == capacity()) return nullptr;
   return &vector_[index].value;
 }
 
@@ -189,7 +192,7 @@ void hash_map<K, V>::print() const {
   std::cout << "Elements:" << std::endl;
   for (size_t i = 0; i < vector_.capacity(); ++i) {
     if (vector_[i].is_empty) {
-      std::cout << "<empty>" << std::endl;
+      std::cout << "<empty> " << vector_[i].continue_searching << std::endl;
     } else {
       std::cout << vector_[i].key << ": " << vector_[i].value << std::endl;
     }
