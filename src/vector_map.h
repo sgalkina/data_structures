@@ -82,7 +82,7 @@ bool vector_map<K, V>::contains_key(K const &key) const {
 
 template <typename K, typename V>
 V const * vector_map<K, V>::lookup(K const &key) const {
-  int index = find(key);
+  size_t index = find(key);
   if (index == size()) return nullptr;
   return &vector_[index].value;
 }

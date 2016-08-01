@@ -98,7 +98,7 @@ size_t hash_map<K, V>::find(K const &key) const {
   size_t initial_hash = hash(key, vector_.capacity());
   for (size_t i = initial_hash; i < capacity(); ++i) {
     if (vector_[i].is_empty && !vector_[i].continue_searching) return capacity();
-    if (vector_[i].key == key) return i;
+    if (!vector_[i].is_empty && vector_[i].key == key) return i;
   }
   return capacity();
 }
@@ -175,14 +175,14 @@ bool hash_map<K, V>::contains_key(K const &key) const {
 
 template <typename K, typename V>
 V const * hash_map<K, V>::lookup(K const &key) const {
-  int index = find(key);
+  size_t index = find(key);
   if (index == capacity()) return nullptr;
   return &vector_[index].value;
 }
 
 template <typename K, typename V>
 V * hash_map<K, V>::lookup(K const &key) {
-  return const_cast<V *>(static_cast<const vector_map<K, V> *>(this)->lookup(key));
+  return const_cast<V *>(static_cast<const hash_map<K, V> *>(this)->lookup(key));
 }
 
 
