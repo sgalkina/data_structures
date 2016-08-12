@@ -2,12 +2,16 @@
 #include <utility>
 
 namespace gtl {
+  template <typename K> struct default_hash {
+    size_t operator() (K const & key) const { return key; }
+  };
+
   static const float OVERLOAD_COEF = 0.75;
 
   /*
    * Hash table with open addressing and linear probing
    */
-  template <typename K, typename V> struct hash_map {
+  template <typename K, typename V, typename H = default_hash<K>> struct hash_map {
     hash_map();
     hash_map(hash_map const &other);
     hash_map(hash_map &&other);
@@ -34,7 +38,7 @@ namespace gtl {
         bool is_empty;
         bool is_deleted;
     };
-
+    H hasher_;
     vector<Entry> vector_;
 
     size_t hash(K const & key, size_t capacity) const;
@@ -48,54 +52,55 @@ namespace gtl {
   };
 
 
-template <typename K, typename V>
-hash_map<K, V>::hash_map()
-  : vector_()
+template <typename K, typename V, typename H>
+hash_map<K, V, H>::hash_map()
+  : hasher_()
+  , vector_()
   , size_()
 {
 }
 
-template <typename K, typename V>
-void hash_map<K, V>::swap(hash_map &other) {
+template <typename K, typename V, typename H>
+void hash_map<K, V, H>::swap(hash_map &other) {
   std::swap(vector_, other.vector_);
 }
 
-template <typename K, typename V>
-hash_map<K, V>::hash_map(hash_map const &other)
+template <typename K, typename V, typename H>
+hash_map<K, V, H>::hash_map(hash_map const &other)
   : vector_(other.vector_)
 {}
 
-template <typename K, typename V>
-hash_map<K, V>::hash_map(hash_map && other)
+template <typename K, typename V, typename H>
+hash_map<K, V, H>::hash_map(hash_map && other)
   : vector_()
 {
   swap(other);
 }
 
-template <typename K, typename V>
-hash_map<K, V> & hash_map<K, V>::operator=(hash_map other) {
+template <typename K, typename V, typename H>
+hash_map<K, V, H> & hash_map<K, V, H>::operator=(hash_map other) {
   swap(other);
   return *this;
 }
 
-template <typename K, typename V>
-size_t hash_map<K, V>::size() const {
+template <typename K, typename V, typename H>
+size_t hash_map<K, V, H>::size() const {
   return size_;
 }
 
-template <typename K, typename V>
-size_t hash_map<K, V>::capacity() const {
+template <typename K, typename V, typename H>
+size_t hash_map<K, V, H>::capacity() const {
   return vector_.capacity();
 }
 
-template <typename K, typename V>
-size_t hash_map<K, V>::hash(K const &key, size_t capacity) const {
+template <typename K, typename V, typename H>
+size_t hash_map<K, V, H>::hash(K const &key, size_t capacity) const {
   if (capacity == 0) return 0;
-  return key % capacity;
+  return hasher_(key) % capacity;
 }
 
-template <typename K, typename V>
-size_t hash_map<K, V>::insertion_point(vector<Entry> const & vect, K const &key) const {
+template <typename K, typename V, typename H>
+size_t hash_map<K, V, H>::insertion_point(vector<Entry> const & vect, K const &key) const {
   size_t initial_hash = hash(key, vect.capacity());
   for (size_t i = initial_hash; i < vect.capacity() + initial_hash; ++i) {
     size_t ind = i % vect.capacity();
@@ -106,24 +111,24 @@ size_t hash_map<K, V>::insertion_point(vector<Entry> const & vect, K const &key)
   assert(false && "Insertion point not found");
 }
 
-template <typename K, typename V>
-size_t hash_map<K, V>::find(K const &key) const {
+template <typename K, typename V, typename H>
+size_t hash_map<K, V, H>::find(K const &key) const {
   if (vector_.capacity() == 0) return 0;
   size_t insertion_index = insertion_point(vector_, key);
   if (vector_[insertion_index].is_empty) return capacity();
   return insertion_index;
 }
 
-template <typename K, typename V>
-bool hash_map<K, V>::add_to_vector(K const &key, V value, vector<Entry> & vect) {
+template <typename K, typename V, typename H>
+bool hash_map<K, V, H>::add_to_vector(K const &key, V value, vector<Entry> & vect) {
   size_t ind = insertion_point(vect, key);
   bool result = vect[ind].is_empty;
   vect[ind] = {key, value, false, false};
   return result;
 }
 
-template <typename K, typename V>
-void hash_map<K, V>::reallocate() {
+template <typename K, typename V, typename H>
+void hash_map<K, V, H>::reallocate() {
   vector<Entry> new_vector;
   size_t capacity = vector_.capacity() == 0 ? 1 : vector_.capacity()*2;
   new_vector.reserve(capacity);
@@ -138,8 +143,8 @@ void hash_map<K, V>::reallocate() {
   vector_ = std::move(new_vector);
 }
 
-template <typename K, typename V>
-bool hash_map<K, V>::add(K const &key, V const &value) {
+template <typename K, typename V, typename H>
+bool hash_map<K, V, H>::add(K const &key, V const &value) {
   if (is_overloaded()) {
     reallocate();
   }
@@ -148,14 +153,14 @@ bool hash_map<K, V>::add(K const &key, V const &value) {
   return result;
 }
 
-template <typename K, typename V>
-bool hash_map<K, V>::is_overloaded() const {
+template <typename K, typename V, typename H>
+bool hash_map<K, V, H>::is_overloaded() const {
   if (capacity() == 0) return true;
   return size()/capacity() >= OVERLOAD_COEF;
 }
 
-template <typename K, typename V>
-bool hash_map<K, V>::remove(K const &key) {
+template <typename K, typename V, typename H>
+bool hash_map<K, V, H>::remove(K const &key) {
   size_t index = find(key);
   if (index == capacity()) return false;
   vector_[index] = {K(), V(), true, true};
@@ -163,26 +168,26 @@ bool hash_map<K, V>::remove(K const &key) {
   return true;
 }
 
-template <typename K, typename V>
-bool hash_map<K, V>::contains_key(K const &key) const {
+template <typename K, typename V, typename H>
+bool hash_map<K, V, H>::contains_key(K const &key) const {
   return find(key) < capacity();
 }
 
-template <typename K, typename V>
-V const * hash_map<K, V>::lookup(K const &key) const {
+template <typename K, typename V, typename H>
+V const * hash_map<K, V, H>::lookup(K const &key) const {
   size_t index = find(key);
   if (index == capacity()) return nullptr;
   return &vector_[index].value;
 }
 
-template <typename K, typename V>
-V * hash_map<K, V>::lookup(K const &key) {
-  return const_cast<V *>(static_cast<const hash_map<K, V> *>(this)->lookup(key));
+template <typename K, typename V, typename H>
+V * hash_map<K, V, H>::lookup(K const &key) {
+  return const_cast<V *>(static_cast<const hash_map<K, V, H> *>(this)->lookup(key));
 }
 
 
-template <typename K, typename V>
-void hash_map<K, V>::print() const {
+template <typename K, typename V, typename H>
+void hash_map<K, V, H>::print() const {
   std::cout << "Capacity is " << vector_.capacity() << ", size is " << size() << std::endl;
   std::cout << "Elements:" << std::endl;
   for (size_t i = 0; i < vector_.capacity(); ++i) {
