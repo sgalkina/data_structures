@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
-#include <assert.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdlib>
 
 namespace gtl {
 
@@ -95,7 +95,7 @@ template <typename T, typename U>
 void map_comparison_test<T, U>::compare_random_queries() {
   T map1;
   U map2;
-  int MAX = 10;
+  int MAX = 1000;
   for (size_t i = 0; i < MAX*MAX; ++i) {
     int element = rand() % MAX;
     assert(map1.add(element, element) == map2.add(element, element));

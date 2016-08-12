@@ -41,6 +41,7 @@ namespace gtl {
     size_t find(K const & key) const;
     bool is_overloaded() const;
     void reallocate();
+    size_t insertion_point(vector<Entry> const & vect, K const &key) const;
     bool add_to_vector(K const &key, V value, vector<Entry> & vect);
 
     size_t size_;
@@ -94,36 +95,31 @@ size_t hash_map<K, V>::hash(K const &key, size_t capacity) const {
 }
 
 template <typename K, typename V>
-size_t hash_map<K, V>::find(K const &key) const {
-  size_t initial_hash = hash(key, vector_.capacity());
-  for (size_t i = initial_hash; i < vector_.capacity() + initial_hash; ++i) {
-    size_t ind = i % vector_.capacity();
-    if (vector_[ind].is_empty && !vector_[ind].is_deleted) return capacity();
-    if (!vector_[ind].is_empty && vector_[ind].key == key) return ind;
+size_t hash_map<K, V>::insertion_point(vector<Entry> const & vect, K const &key) const {
+  size_t initial_hash = hash(key, vect.capacity());
+  for (size_t i = initial_hash; i < vect.capacity() + initial_hash; ++i) {
+    size_t ind = i % vect.capacity();
+    bool is_empty = vect[ind].is_empty && !vect[ind].is_deleted;
+    bool is_found = !vect[ind].is_empty && vect[ind].key == key;
+    if (is_empty || is_found) return ind;
   }
-  return capacity();
+  assert(false && "Insertion point not found");
+}
+
+template <typename K, typename V>
+size_t hash_map<K, V>::find(K const &key) const {
+  if (vector_.capacity() == 0) return 0;
+  size_t insertion_index = insertion_point(vector_, key);
+  if (vector_[insertion_index].is_empty) return capacity();
+  return insertion_index;
 }
 
 template <typename K, typename V>
 bool hash_map<K, V>::add_to_vector(K const &key, V value, vector<Entry> & vect) {
-  size_t initial_hash = hash(key, vect.capacity());
-  for (size_t i = initial_hash; i < vect.capacity() + initial_hash; ++i) {
-    size_t ind = i % vect.capacity();
-    if (vect[ind].is_empty && !vect[ind].is_deleted) {
-      vect[ind].key = key;
-      vect[ind].value = value;
-      vect[ind].is_empty = false;
-      vect[ind].is_deleted = false;
-      return true;
-    }
-    if (vect[ind].key == key) {
-      vect[ind].value = value;
-      vect[ind].is_deleted = false;
-      return false;
-    }
-  }
-  std::cout << "EXCEPTION" << std::endl;
-  return false;
+  size_t ind = insertion_point(vect, key);
+  bool result = vect[ind].is_empty;
+  vect[ind] = {key, value, false, false};
+  return result;
 }
 
 template <typename K, typename V>
@@ -132,8 +128,7 @@ void hash_map<K, V>::reallocate() {
   size_t capacity = vector_.capacity() == 0 ? 1 : vector_.capacity()*2;
   new_vector.reserve(capacity);
   for (size_t i = 0; i < capacity; ++i) {
-    Entry empty_entry = {K(), V(), true, false};
-    new_vector.push_back(empty_entry);
+    new_vector.push_back({K(), V(), true, false});
   }
   for (size_t i = 0; i < vector_.capacity(); ++i) {
     if (!vector_[i].is_empty) {
@@ -163,8 +158,7 @@ template <typename K, typename V>
 bool hash_map<K, V>::remove(K const &key) {
   size_t index = find(key);
   if (index == capacity()) return false;
-  Entry empty_entry = {K(), V(), true, true};
-  vector_[index] = empty_entry;
+  vector_[index] = {K(), V(), true, true};
   size_--;
   return true;
 }
