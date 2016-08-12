@@ -66,6 +66,7 @@ void vector_removal_operations() {
 }
 
 void test_vector() {
+  std::cout << "Vector start" << std::endl;
   vector_smoketest();
   vector_reserve();
   vector_value_semantics();
@@ -74,6 +75,7 @@ void test_vector() {
 }
 
 void test_vector_map() {
+  std::cout << "Vector Map start" << std::endl;
   gtl::smoketest_map< gtl::vector_map<int, int> > test;
   test.smoketest();
   gtl::smoketest_map< gtl::vector_map<int, memcheck> > test_value;
@@ -81,10 +83,21 @@ void test_vector_map() {
   std::cout << "Vector Map OK" << std::endl;
 }
 
+void test_hash_map() {
+  std::cout << "Hash Map start" << std::endl;
+  gtl::smoketest_map< gtl::hash_map<int, int> > test;
+  test.smoketest();
+  gtl::smoketest_map< gtl::hash_map<int, memcheck> > test_value;
+  test_value.value_semantics();
+  std::cout << "Hash Map OK" << std::endl;
+}
+
 void map_comparison() {
+  std::cout << "vector_map vs vector_map start" << std::endl;
   gtl::map_comparison_test< gtl::vector_map<int, int>, gtl::vector_map<int, int> > test;
   test.compare_random_queries();
   std::cout << "vector_map vs vector_map OK" << std::endl;
+  std::cout << "vector_map vs hash_map start" << std::endl;
   gtl::map_comparison_test< gtl::vector_map<int, int>, gtl::hash_map<int, int> > test_diff;
   test_diff.compare_random_queries();
   std::cout << "vector_map vs hash_map OK" << std::endl;
@@ -93,6 +106,7 @@ void map_comparison() {
 int main(int argc, char* argv[]) {
   test_vector();
   test_vector_map();
+  test_hash_map();
   map_comparison();
   return 0;
 }

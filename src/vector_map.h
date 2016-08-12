@@ -13,6 +13,7 @@ template <typename K, typename V> struct vector_map {
   vector_map &operator=(vector_map other);
 
   size_t size() const;
+  size_t capacity() const;
 
   bool add(K const &key, V value);
   bool remove(K const &key);
@@ -65,6 +66,11 @@ vector_map<K, V> & vector_map<K, V>::operator=(vector_map other) {
 template <typename K, typename V>
 size_t vector_map<K, V>::size() const {
   return vector_.size();
+}
+
+template <typename K, typename V>
+size_t vector_map<K, V>::capacity() const {
+  return vector_.capacity();
 }
 
 template <typename K, typename V>

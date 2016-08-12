@@ -9,8 +9,12 @@ namespace gtl {
  * Smoketest class for map implementations
  */
 template <typename T> struct smoketest_map {
+public:
   void smoketest();
   void value_semantics();
+
+private:
+  void search();
 };
 
 template <typename T>
@@ -31,6 +35,24 @@ void smoketest_map<T>::smoketest() {
   assert(map.size() == 0);
   int * empty_value = map.lookup(1);
   assert(empty_value == nullptr);
+  search();
+}
+
+template <typename T>
+void smoketest_map<T>::search() {
+  T map;
+  int MAX = 10;
+  for (size_t i = 0; i < MAX*MAX; ++i) {
+    int element = rand() % MAX;
+    map.add(element, element);
+  }
+  size_t steps = 2;
+  size_t x = map.capacity() - steps + 1;
+  for (size_t i = 1; i <= steps; ++i) {
+    map.add(x + map.capacity()*i, x + map.capacity()*i);
+  }
+  int to_find = x + map.capacity()*steps;
+  assert(map.contains_key(to_find));
 }
 
 template <typename T>
