@@ -32,7 +32,7 @@ namespace gtl {
         K key;
         V value;
         bool is_empty;
-        bool continue_searching;
+        bool is_deleted;
     };
 
     vector<Entry> vector_;
@@ -96,9 +96,10 @@ size_t hash_map<K, V>::hash(K const &key, size_t capacity) const {
 template <typename K, typename V>
 size_t hash_map<K, V>::find(K const &key) const {
   size_t initial_hash = hash(key, vector_.capacity());
-  for (size_t i = initial_hash; i < capacity(); ++i) {
-    if (vector_[i].is_empty && !vector_[i].continue_searching) return capacity();
-    if (!vector_[i].is_empty && vector_[i].key == key) return i;
+  for (size_t i = initial_hash; i < vector_.capacity() + initial_hash; ++i) {
+    size_t ind = i % vector_.capacity();
+    if (vector_[ind].is_empty && !vector_[ind].is_deleted) return capacity();
+    if (!vector_[ind].is_empty && vector_[ind].key == key) return ind;
   }
   return capacity();
 }
@@ -108,16 +109,16 @@ bool hash_map<K, V>::add_to_vector(K const &key, V value, vector<Entry> & vect) 
   size_t initial_hash = hash(key, vect.capacity());
   for (size_t i = initial_hash; i < vect.capacity() + initial_hash; ++i) {
     size_t ind = i % vect.capacity();
-    if (vect[ind].is_empty && !vect[ind].continue_searching) {
+    if (vect[ind].is_empty && !vect[ind].is_deleted) {
       vect[ind].key = key;
       vect[ind].value = value;
       vect[ind].is_empty = false;
-      vect[ind].continue_searching = false;
+      vect[ind].is_deleted = false;
       return true;
     }
     if (vect[ind].key == key) {
       vect[ind].value = value;
-      vect[ind].continue_searching = false;
+      vect[ind].is_deleted = false;
       return false;
     }
   }
@@ -192,7 +193,7 @@ void hash_map<K, V>::print() const {
   std::cout << "Elements:" << std::endl;
   for (size_t i = 0; i < vector_.capacity(); ++i) {
     if (vector_[i].is_empty) {
-      std::cout << "<empty> " << vector_[i].continue_searching << std::endl;
+      std::cout << "<empty> " << vector_[i].is_deleted << std::endl;
     } else {
       std::cout << vector_[i].key << ": " << vector_[i].value << std::endl;
     }
