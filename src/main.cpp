@@ -6,6 +6,7 @@
 #include "vector.h"
 #include "vector_map.h"
 #include "hash_map.h"
+#include "tree_map.h"
 #include "memcheck.h"
 #include "test_map.h"
 
@@ -91,6 +92,18 @@ void test_hash_map() {
   test_value.value_semantics();
 }
 
+void test_tree_map() {
+  // std::cout << "tree_map" << std::endl;
+  gtl::tree_map<int, int> tree;
+  int max_element = 15;
+  size_t n = 10;
+  for (size_t i = 0; i < n; ++i) {
+    int element = rand() % max_element;
+    tree.add(element, element);
+  }
+  std::cout << tree.dot_graph() << std::endl;
+}
+
 void map_comparison() {
   std::cout << "vector_map vs vector_map" << std::endl;
   gtl::map_comparison_test< gtl::vector_map<int, int>, gtl::vector_map<int, int> > test;
@@ -102,9 +115,10 @@ void map_comparison() {
 
 int main(int argc, char* argv[]) {
   std::srand(std::time(0));
-  test_vector();
-  test_vector_map();
-  test_hash_map();
-  map_comparison();
+  // test_vector();
+  // test_vector_map();
+  // test_hash_map();
+  // map_comparison();
+  test_tree_map();
   return 0;
 }
