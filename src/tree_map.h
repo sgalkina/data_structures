@@ -26,16 +26,21 @@ namespace gtl {
 
       Node &operator=(Node other) = delete;
 
-      bool add(K new_key, V new_value);
+      Node * rotate_right();
+      Node * rotate_left();
+      void flip_colors();
 
       std::string dot_graph() const;
 
       K key;
       V value;
+      bool is_red;
       Node * left;
       Node * right;
     };
 
+    Node * add(Node * node, K key, V value);
+    bool is_red(Node * node);
     Node * root_;
   };
 
@@ -43,6 +48,7 @@ template <typename K, typename V>
 tree_map<K, V>::Node::Node(K const & key, V const & value)
   : key(key)
   , value(value)
+  , is_red(true)
   , left(nullptr)
   , right(nullptr)
 {}
@@ -57,35 +63,69 @@ tree_map<K, V>::Node::~Node()
 template <typename K, typename V>
 std::string tree_map<K, V>::Node::dot_graph() const {
   std::stringstream result;
-  bool no_children = !left && !right;
-  if (no_children) {
-    result << key << ";";
-    return result.str();
-  }
-  if (left) {
-    result << key << " -> " << left->key << ";" << std::endl;
-    result << left->dot_graph();
-  }
-  if (right) {
-    result << key << " -> " << right->key << ";" << std::endl;
-    result << right->dot_graph();
+  result << key << ";\n";
+  auto children = {left, right};
+  for (auto child : children) {
+    if (child) {
+      std::string color = child->is_red ? "red" : "black";
+      result << key << " -> " << child->key << "[color=\"" << color << "\"];\n";
+      result << child->dot_graph();
+    }
   }
   return result.str();
 }
 
 template <typename K, typename V>
-bool tree_map<K, V>::Node::add(K new_key, V new_value) {
-  if (new_key == key) {
-    key = new_key;
-    value = new_value;
-    return false;
-  }
-  Node * next = new_key < key ? left : right;
-  if (next) return next->add(new_key, new_value);
-  next = new Node(new_key, new_value);
-  if (new_key < key) left = next;
-  else right = next;
-  return true;
+auto tree_map<K, V>::Node::rotate_left() -> Node * {
+  Node * x = right;
+  assert(x->is_red);
+  x->is_red = is_red;
+  is_red = true;
+  right = x->left;
+  x->left = this;
+  return x;
+}
+
+template <typename K, typename V>
+auto tree_map<K, V>::Node::rotate_right() -> Node * {
+  Node * x = left;
+  assert(x->is_red);
+  x->is_red = is_red;
+  is_red = true;
+  left = x->right;
+  x->right = this;
+  return x;
+}
+
+template <typename K, typename V>
+void tree_map<K, V>::Node::flip_colors() {
+  assert(!is_red);
+  assert(left->is_red);
+  assert(right->is_red);
+  is_red = true;
+  left->is_red = false;
+  right->is_red = false;
+}
+
+template <typename K, typename V>
+bool tree_map<K, V>::is_red(Node * node) {
+  return node && node->is_red;
+}
+
+template <typename K, typename V>
+typename tree_map<K, V>::Node * tree_map<K, V>::add(Node * node, K key, V value) {
+  if (!node) return new Node(key, value);
+
+  if (is_red(node->left) && is_red(node->right)) node->flip_colors();
+
+  if (key == node->key) node->value = value;
+  else if (key < node->key) node->left = add(node->left, key, value);
+  else node->right = add(node->right, key, value);
+
+  if (is_red(node->right) && !is_red(node->left)) node = node->rotate_left();
+  if (is_red(node->left) && is_red(node->left->left)) node = node->rotate_right();
+
+  return node;
 }
 
 template <typename K, typename V>
@@ -109,11 +149,9 @@ std::string tree_map<K, V>::dot_graph() const {
 
 template <typename K, typename V>
 bool tree_map<K, V>::add(K key, V value) {
-  if (root_ == nullptr) {
-    root_ = new Node(key, value);
-    return true;
-  }
-  return root_->add(key, value);
+  root_ = add(root_, key, value);
+  root_->is_red = false;
+  return true;
 }
 
 }
