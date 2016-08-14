@@ -2,3 +2,4 @@ bin/test
 bin/main
 bin/*.o
 bin/tree*
+bin/*.png

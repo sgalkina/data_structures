@@ -13,4 +13,6 @@ bin/memcheck.o: src/memcheck.h src/memcheck.cpp
 
 dot: bin/test
 	./bin/test > bin/tree.dot
-	dot bin/tree.dot -o bin/tree.png -Tpng
+	dot bin/tree.dot -O -Tpng
+	convert bin/tree.dot.*png +append bin/result.png
+	rm bin/tree.dot.*png

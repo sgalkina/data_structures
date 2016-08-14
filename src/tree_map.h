@@ -15,8 +15,10 @@ namespace gtl {
 
     bool add(K key, V value);
 
+    void delete_min();
+
     // A debug representation, suitable for displaying with http://www.graphviz.org
-    std::string dot_graph() const;
+    std::string dot_graph(std::string name) const;
 
   private:
     struct Node {
@@ -41,6 +43,9 @@ namespace gtl {
 
     Node * add(Node * node, K key, V value);
     bool is_red(Node * node);
+    Node * fix_up(Node * node);
+    Node * delete_min(Node * node);
+    Node * move_red_left(Node * node);
     Node * root_;
   };
 
@@ -99,12 +104,9 @@ auto tree_map<K, V>::Node::rotate_right() -> Node * {
 
 template <typename K, typename V>
 void tree_map<K, V>::Node::flip_colors() {
-  assert(!is_red);
-  assert(left->is_red);
-  assert(right->is_red);
-  is_red = true;
-  left->is_red = false;
-  right->is_red = false;
+  is_red = !is_red;
+  left->is_red = !left->is_red;
+  right->is_red = !right->is_red;
 }
 
 template <typename K, typename V>
@@ -113,19 +115,22 @@ bool tree_map<K, V>::is_red(Node * node) {
 }
 
 template <typename K, typename V>
+auto tree_map<K, V>::fix_up(Node * node) -> Node * {
+  if (is_red(node->right) && !is_red(node->left)) node = node->rotate_left();
+  if (is_red(node->left) && is_red(node->left->left)) node = node->rotate_right();
+  if (is_red(node->left) && is_red(node->right)) node->flip_colors();
+  return node;
+}
+
+template <typename K, typename V>
 typename tree_map<K, V>::Node * tree_map<K, V>::add(Node * node, K key, V value) {
   if (!node) return new Node(key, value);
-
-  if (is_red(node->left) && is_red(node->right)) node->flip_colors();
 
   if (key == node->key) node->value = value;
   else if (key < node->key) node->left = add(node->left, key, value);
   else node->right = add(node->right, key, value);
 
-  if (is_red(node->right) && !is_red(node->left)) node = node->rotate_left();
-  if (is_red(node->left) && is_red(node->left->left)) node = node->rotate_right();
-
-  return node;
+  return fix_up(node);
 }
 
 template <typename K, typename V>
@@ -141,8 +146,8 @@ tree_map<K, V>::~tree_map()
 }
 
 template <typename K, typename V>
-std::string tree_map<K, V>::dot_graph() const {
-  std::string result = "digraph tree_map {";
+std::string tree_map<K, V>::dot_graph(std::string name) const {
+  std::string result = "digraph " + name + " {";
   if (root_) result += root_->dot_graph();
   return result + "}";
 }
@@ -152,6 +157,31 @@ bool tree_map<K, V>::add(K key, V value) {
   root_ = add(root_, key, value);
   root_->is_red = false;
   return true;
+}
+
+template <typename K, typename V>
+void tree_map<K, V>::delete_min() {
+  root_ = delete_min(root_);
+  root_->is_red = false;
+}
+
+template <typename K, typename V>
+auto tree_map<K, V>::delete_min(Node * node) -> Node * {
+  if (!node->left) return node->right;
+  if (!is_red(node->left) && !is_red(node->left->left)) node = move_red_left(node);
+  node->left = delete_min(node->left);
+  return fix_up(node);
+}
+
+template <typename K, typename V>
+auto tree_map<K, V>::move_red_left(Node * node) -> Node * {
+  node->flip_colors();
+  if (is_red(node->right->left)) {
+    node->right = node->rotate_right();
+    node = node->rotate_left();
+    node->flip_colors();
+  }
+  return node;
 }
 
 }

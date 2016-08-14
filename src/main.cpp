@@ -96,12 +96,15 @@ void test_tree_map() {
   // std::cout << "tree_map" << std::endl;
   gtl::tree_map<int, int> tree;
   int max_element = 32;
-  size_t n = 40;
+  size_t n = 10;
+  // size_t n = 40;
   for (size_t i = 0; i < n; ++i) {
     int element = rand() % max_element;
     tree.add(element, element);
   }
-  std::cout << tree.dot_graph() << std::endl;
+  std::cout << tree.dot_graph("before") << "\n";
+  tree.delete_min();
+  std::cout << tree.dot_graph("after") << std::endl;
 }
 
 void map_comparison() {
