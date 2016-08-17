@@ -1,5 +1,6 @@
 #include <string>
 #include <sstream>
+#include <fstream>
 
 namespace gtl {
   /*
@@ -14,6 +15,7 @@ namespace gtl {
     tree_map &operator=(tree_map other) = delete;
 
     bool add(K key, V value);
+    void trace();
 
     void delete_min();
 
@@ -46,6 +48,9 @@ namespace gtl {
     Node * fix_up(Node * node);
     Node * delete_min(Node * node);
     Node * move_red_left(Node * node);
+    Node * get(Node * node, K const & key);
+    Node * get(K const & key);
+    Node * min(Node * node) const;
     Node * root_;
   };
 
@@ -72,9 +77,11 @@ std::string tree_map<K, V>::Node::dot_graph() const {
   auto children = {left, right};
   for (auto child : children) {
     if (child) {
+      // std::cout << "here " << key << std::endl;
       std::string color = child->is_red ? "red" : "black";
       result << key << " -> " << child->key << "[color=\"" << color << "\"];\n";
       result << child->dot_graph();
+      // std::cout << "here2" << std::endl;
     }
   }
   return result.str();
@@ -149,7 +156,7 @@ template <typename K, typename V>
 std::string tree_map<K, V>::dot_graph(std::string name) const {
   std::string result = "digraph " + name + " {";
   if (root_) result += root_->dot_graph();
-  return result + "}";
+  return result + "labelloc=\"t\";\nlabel=\"" + name + "\";}";
 }
 
 template <typename K, typename V>
@@ -162,12 +169,46 @@ bool tree_map<K, V>::add(K key, V value) {
 template <typename K, typename V>
 void tree_map<K, V>::delete_min() {
   root_ = delete_min(root_);
-  root_->is_red = false;
+  if (root_) root_->is_red = false;
+}
+
+template <typename K, typename V>
+Node * tree_map<K, V>::get(K const & key) {
+  return get(root_, key);
+}
+
+template <typename K, typename V>
+Node * tree_map<K, V>::get(Node * node, K const & key) {
+  if (!node) return nullptr;
+  if (node->key == key) return node;
+  if (key < node->key) return get(node->left, key);
+  return get(node->right, key);
+}
+
+template <typename K, typename V>
+Node * tree_map<K, V>::min(Node * node) const {
+  if (!node) return nullptr;
+  if (!node->left) return node;
+  return min(node->left);
+}
+
+template <typename K, typename V>
+void tree_map<K, V>::trace() {
+  static size_t i = 0;
+  std::string name = "trace" + std::to_string(i++);
+  std::ofstream f("bin/" + name + ".dot");
+  f << dot_graph(name);
 }
 
 template <typename K, typename V>
 auto tree_map<K, V>::delete_min(Node * node) -> Node * {
-  if (!node->left) return node->right;
+  if (!node) return nullptr;
+  if (!node->left) {
+    Node * temp = node->right;
+    node->right = nullptr;
+    delete node;
+    return temp;
+  }
   if (!is_red(node->left) && !is_red(node->left->left)) node = move_red_left(node);
   node->left = delete_min(node->left);
   return fix_up(node);
@@ -177,7 +218,7 @@ template <typename K, typename V>
 auto tree_map<K, V>::move_red_left(Node * node) -> Node * {
   node->flip_colors();
   if (is_red(node->right->left)) {
-    node->right = node->rotate_right();
+    node->right = node->right->rotate_right();
     node = node->rotate_left();
     node->flip_colors();
   }

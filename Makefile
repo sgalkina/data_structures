@@ -11,8 +11,9 @@ bin/main.o: src/main.cpp src/vector.h src/vector_map.h src/memcheck.h src/test_m
 bin/memcheck.o: src/memcheck.h src/memcheck.cpp
 	clang++ -o bin/memcheck.o -c $(CPP_FLAGS) src/memcheck.cpp
 
-dot: bin/test
-	./bin/test > bin/tree.dot
-	dot bin/tree.dot -O -Tpng
-	convert bin/tree.dot.*png +append bin/result.png
-	rm bin/tree.dot.*png
+trace: bin/test
+	./bin/test
+	dot bin/trace*.dot -O -Tpng
+	convert bin/trace*.dot.png +append bin/trace.png
+	rm bin/trace*.dot.png
+	rm bin/trace*.dot
