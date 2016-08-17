@@ -94,19 +94,29 @@ void test_hash_map() {
 
 void test_tree_map() {
   gtl::tree_map<int, int> tree;
-  int max_element = 1500;
-  size_t n = 10;
-  for (size_t i = 0; i < n; ++i) {
-    int element = rand() % max_element;
-    // std::cout << "tree.add(" << element << ", 5);" << std::endl;
-    tree.add(element, element);
-  }
+  // int max_element = 1500;
+  // size_t n = 10;
+  // for (size_t i = 0; i < n; ++i) {
+  //   int element = rand() % max_element;
+  //   std::cout << "tree.add(" << element << ", 5);" << std::endl;
+  //   tree.add(element, element);
+  // }
+  tree.add(1211, 5);
+  tree.add(458, 5);
+  tree.add(271, 5);
+  tree.add(223, 5);
+  tree.add(619, 5);
+  tree.add(1435, 5);
+  tree.add(58, 5);
+  tree.add(1229, 5);
+  tree.add(617, 5);
+  tree.add(1182, 5);
   tree.trace();
-  for (size_t i = 0; i < n; ++i) {
-    tree.delete_min();
-    tree.trace();
-  }
-  tree.delete_min();
+  tree.remove(1435);
+  tree.trace();
+  tree.remove(458);
+  tree.trace();
+  tree.remove(1229);
   tree.trace();
 }
 

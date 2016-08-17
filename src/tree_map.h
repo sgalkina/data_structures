@@ -18,6 +18,7 @@ namespace gtl {
     void trace();
 
     void delete_min();
+    void remove(K const & key);
 
     // A debug representation, suitable for displaying with http://www.graphviz.org
     std::string dot_graph(std::string name) const;
@@ -47,7 +48,9 @@ namespace gtl {
     bool is_red(Node * node);
     Node * fix_up(Node * node);
     Node * delete_min(Node * node);
+    Node * remove(Node * node, K const & key);
     Node * move_red_left(Node * node);
+    Node * move_red_right(Node * node);
     Node * get(Node * node, K const & key);
     Node * get(K const & key);
     Node * min(Node * node) const;
@@ -173,12 +176,43 @@ void tree_map<K, V>::delete_min() {
 }
 
 template <typename K, typename V>
-Node * tree_map<K, V>::get(K const & key) {
+void tree_map<K, V>::remove(K const & key) {
+  root_ = remove(root_, key);
+  if (root_) root_->is_red = false;
+}
+
+template <typename K, typename V>
+auto tree_map<K, V>::remove(Node * node, K const & key) -> Node * {
+  if (!node) return nullptr;
+  if (key < node->key) {
+    if (!is_red(node->left) && !is_red(node->left->left)) node = move_red_left(node);
+    node->left = remove(node->left, key);
+  } else {
+    if (is_red(node->left)) node = node->rotate_right();
+    if (key == node->key && !node->right) {
+      Node * temp = node->left;
+      node->left = nullptr;
+      delete node;
+      return temp;
+    }
+    if (!is_red(node->right) && !is_red(node->right->left)) node = move_red_right(node);
+    if (key == node->key) {
+      node->value = min(node->right)->value;
+      node->right = delete_min(node->right);
+    } else {
+      node->right = remove(node->right, key);
+    }
+  }
+  return fix_up(node);
+}
+
+template <typename K, typename V>
+auto tree_map<K, V>::get(K const & key) -> Node * {
   return get(root_, key);
 }
 
 template <typename K, typename V>
-Node * tree_map<K, V>::get(Node * node, K const & key) {
+auto tree_map<K, V>::get(Node * node, K const & key) -> Node * {
   if (!node) return nullptr;
   if (node->key == key) return node;
   if (key < node->key) return get(node->left, key);
@@ -186,7 +220,7 @@ Node * tree_map<K, V>::get(Node * node, K const & key) {
 }
 
 template <typename K, typename V>
-Node * tree_map<K, V>::min(Node * node) const {
+auto tree_map<K, V>::min(Node * node) const -> Node * {
   if (!node) return nullptr;
   if (!node->left) return node;
   return min(node->left);
@@ -220,6 +254,16 @@ auto tree_map<K, V>::move_red_left(Node * node) -> Node * {
   if (is_red(node->right->left)) {
     node->right = node->right->rotate_right();
     node = node->rotate_left();
+    node->flip_colors();
+  }
+  return node;
+}
+
+template <typename K, typename V>
+auto tree_map<K, V>::move_red_right(Node * node) -> Node * {
+  node->flip_colors();
+  if (is_red(node->left->left)) {
+    node = node->rotate_right();
     node->flip_colors();
   }
   return node;
