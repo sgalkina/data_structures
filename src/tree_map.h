@@ -44,7 +44,7 @@ namespace gtl {
       Node * right;
     };
 
-    Node * add(Node * node, K key, V value);
+    Node * add(Node * node, K key, V value, bool & result);
     bool is_red(Node * node);
     Node * fix_up(Node * node);
     Node * delete_min(Node * node);
@@ -133,12 +133,15 @@ auto tree_map<K, V>::fix_up(Node * node) -> Node * {
 }
 
 template <typename K, typename V>
-typename tree_map<K, V>::Node * tree_map<K, V>::add(Node * node, K key, V value) {
-  if (!node) return new Node(key, value);
+typename tree_map<K, V>::Node * tree_map<K, V>::add(Node * node, K key, V value, bool & result) {
+  if (!node) {
+    result = true;
+    return new Node(key, value);
+  }
 
   if (key == node->key) node->value = value;
-  else if (key < node->key) node->left = add(node->left, key, value);
-  else node->right = add(node->right, key, value);
+  else if (key < node->key) node->left = add(node->left, key, value, result);
+  else node->right = add(node->right, key, value, result);
 
   return fix_up(node);
 }
@@ -164,9 +167,10 @@ std::string tree_map<K, V>::dot_graph(std::string name) const {
 
 template <typename K, typename V>
 bool tree_map<K, V>::add(K key, V value) {
-  root_ = add(root_, key, value);
+  bool result = false;
+  root_ = add(root_, key, value, result);
   root_->is_red = false;
-  return true;
+  return result;
 }
 
 template <typename K, typename V>
