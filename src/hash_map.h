@@ -30,7 +30,7 @@ namespace gtl {
 
     bool contains_key(K const &key) const;
 
-    void print() const;
+    void trace() const;
   private:
     struct Entry {
         K key;
@@ -187,7 +187,7 @@ V * hash_map<K, V, H>::lookup(K const &key) {
 
 
 template <typename K, typename V, typename H>
-void hash_map<K, V, H>::print() const {
+void hash_map<K, V, H>::trace() const {
   std::cout << "Capacity is " << vector_.capacity() << ", size is " << size() << std::endl;
   std::cout << "Elements:" << std::endl;
   for (size_t i = 0; i < vector_.capacity(); ++i) {

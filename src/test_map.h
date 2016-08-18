@@ -32,6 +32,7 @@ void smoketest_map<T>::smoketest() {
   assert(*new_value == 200);
   assert(map.remove(1));
   assert(!map.remove(1));
+  assert(!map.remove(14));
   assert(map.size() == 0);
   int * empty_value = map.lookup(1);
   assert(empty_value == nullptr);
@@ -48,11 +49,12 @@ void smoketest_map<T>::search() {
   }
   size_t steps = 2;
   size_t x = map.capacity() - steps + 1;
+  size_t last_step;
   for (size_t i = 1; i <= steps; ++i) {
-    map.add(x + map.capacity()*i, x + map.capacity()*i);
+    last_step = x + map.capacity()*i;
+    map.add(last_step, last_step);
   }
-  int to_find = x + map.capacity()*steps;
-  assert(map.contains_key(to_find));
+  assert(map.contains_key(last_step));
 }
 
 template <typename T>

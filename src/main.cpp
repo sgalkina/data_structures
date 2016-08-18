@@ -93,16 +93,9 @@ void test_hash_map() {
 }
 
 void test_tree_map() {
-  gtl::tree_map<int, int> tree;
-  // int max_element = 1500;
-  // size_t n = 10;
-  // for (size_t i = 0; i < n; ++i) {
-  //   int element = rand() % max_element;
-  //   tree.add(element, element);
-  // }
-  assert(tree.add(5, 5));
-  assert(!tree.add(5, 5));
-  tree.trace();
+  std::cout << "tree_map" << std::endl;
+  gtl::smoketest_map< gtl::tree_map<int, int> > test;
+  test.smoketest();
 }
 
 void map_comparison() {
@@ -110,16 +103,19 @@ void map_comparison() {
   gtl::map_comparison_test< gtl::vector_map<int, int>, gtl::vector_map<int, int> > test;
   test.compare_random_queries();
   std::cout << "vector_map vs hash_map" << std::endl;
-  gtl::map_comparison_test< gtl::vector_map<int, int>, gtl::hash_map<int, int> > test_diff;
-  test_diff.compare_random_queries();
+  gtl::map_comparison_test< gtl::vector_map<int, int>, gtl::hash_map<int, int> > test2;
+  test2.compare_random_queries();
+  std::cout << "tree_map vs hash_map" << std::endl;
+  gtl::map_comparison_test< gtl::tree_map<int, int>, gtl::hash_map<int, int> > test3;
+  test3.compare_random_queries();
 }
 
 int main(int argc, char* argv[]) {
   std::srand(std::time(0));
-  // test_vector();
-  // test_vector_map();
-  // test_hash_map();
-  // map_comparison();
+  test_vector();
+  test_vector_map();
+  test_hash_map();
   test_tree_map();
+  map_comparison();
   return 0;
 }

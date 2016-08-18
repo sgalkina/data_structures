@@ -17,3 +17,9 @@ trace: bin/test
 	convert bin/trace*.dot.png +append bin/trace.png
 	rm bin/trace*.dot.png
 	rm bin/trace*.dot
+
+trace_pic: bin/test
+	dot bin/trace*.dot -O -Tpng
+	convert bin/trace*.dot.png +append bin/trace.png
+	rm bin/trace*.dot.png
+	rm bin/trace*.dot
