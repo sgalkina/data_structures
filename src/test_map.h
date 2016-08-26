@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
+#include <ctime>
+#include <climits>
 
 namespace gtl {
 
@@ -118,4 +120,79 @@ void map_comparison_test<T, U>::compare_random_queries() {
   }
 }
 
+/*
+ *  Benchmarking for map operations
+ */
+size_t max_number = 8000;
+size_t n_operations = 1000;
+
+template <typename T> struct addition
+{
+  void operator() (T & map) {
+    for (size_t i = 0; i < 14*n_operations; ++i) {
+      map.add(rand() % max_number, 0);
+    }
+  }
+};
+
+template <typename T> struct deletion
+{
+  void operator() (T & map) {
+    for (size_t i = 0; i < 14*n_operations; ++i) {
+      map.remove(rand() % max_number);
+    }
+  }
+};
+
+template <typename T> struct search
+{
+  void operator() (T const & map) {
+    for (size_t i = 0; i < 14*n_operations; ++i) {
+      map.contains_key(rand() % max_number);
+    }
+  }
+};
+
+template <typename T> struct mixed
+{
+  void operator() (T & map) {
+    for (size_t i = 0; i < 10*n_operations; ++i) {
+      map.lookup(rand() % max_number);
+    }
+    for (size_t i = 0; i < 3*n_operations; ++i) {
+      int el = rand() % max_number;
+      map.add(el, 0);
+    }
+    for (size_t i = 0; i < n_operations; ++i) {
+      int el = rand() % max_number;
+      map.remove(el);
+    }
+  }
+};
+
+template <typename T, typename U>
+clock_t benchmark_operation(T & map) {
+  U op;
+  size_t n_runs = 100;
+  clock_t min_time = LONG_MAX;
+  for (size_t i = 0; i < n_runs; ++i) {
+    clock_t start_time = std::clock();
+    op(map);
+    clock_t end_time = std::clock();
+    clock_t t = (end_time - start_time) % CLOCKS_PER_SEC;
+    if (t < min_time) min_time = t;
+  }
+  return min_time;
+}
+
+template <typename T>
+std::string benchmark() {
+  T map;
+  return
+    std::to_string(benchmark_operation<T, addition<T>>(map)) + " " +
+    std::to_string(benchmark_operation<T, search<T>>(map)) + " " +
+    std::to_string(benchmark_operation<T, mixed<T>>(map)) + " " +
+    std::to_string(benchmark_operation<T, deletion<T>>(map)) + " " +
+    "\n";
+}
 }

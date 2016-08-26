@@ -112,10 +112,19 @@ void map_comparison() {
 
 int main(int argc, char* argv[]) {
   std::srand(std::time(0));
-  test_vector();
-  test_vector_map();
-  test_hash_map();
-  test_tree_map();
-  map_comparison();
+  // test_vector();
+  // test_vector_map();
+  // test_hash_map();
+  // test_tree_map();
+  // map_comparison();
+
+  std::ofstream f("bin/benchmark.dat");
+  f << "Map Addition Search Search+Add+Delete Deletion\n";
+  std::cout << "benchmark vector map" << std::endl;
+  f << "VectorMap" << " " << gtl::benchmark<gtl::vector_map<int, int>>();
+  std::cout << "benchmark hash map" << std::endl;
+  f << "HashMap" << " " << gtl::benchmark<gtl::hash_map<int, int, std::hash<int>>>();
+  std::cout << "benchmark tree map" << std::endl;
+  f << "TreeMap" << " " << gtl::benchmark<gtl::tree_map<int, int>>();
   return 0;
 }

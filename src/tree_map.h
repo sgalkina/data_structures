@@ -88,11 +88,9 @@ std::string tree_map<K, V>::Node::dot_graph() const {
   auto children = {left, right};
   for (auto child : children) {
     if (child) {
-      // std::cout << "here " << key << std::endl;
       std::string color = child->is_red ? "red" : "black";
       result << key << " -> " << child->key << "[color=\"" << color << "\"];\n";
       result << child->dot_graph();
-      // std::cout << "here2" << std::endl;
     }
   }
   return result.str();

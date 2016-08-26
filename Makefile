@@ -23,3 +23,7 @@ trace_pic: bin/test
 	convert bin/trace*.dot.png +append bin/trace.png
 	rm bin/trace*.dot.png
 	rm bin/trace*.dot
+
+time: bin/test src/benchmark.gnu
+	./bin/test
+	gnuplot src/benchmark.gnu

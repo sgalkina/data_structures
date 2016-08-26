@@ -121,6 +121,7 @@ size_t hash_map<K, V, H>::find(K const &key) const {
 
 template <typename K, typename V, typename H>
 bool hash_map<K, V, H>::add_to_vector(K const &key, V value, vector<Entry> & vect) {
+  if (vector_.capacity() == 0) return 0;
   size_t ind = insertion_point(vect, key);
   bool result = vect[ind].is_empty;
   vect[ind] = {key, value, false, false};
@@ -130,11 +131,12 @@ bool hash_map<K, V, H>::add_to_vector(K const &key, V value, vector<Entry> & vec
 template <typename K, typename V, typename H>
 void hash_map<K, V, H>::reallocate() {
   vector<Entry> new_vector;
-  size_t capacity = vector_.capacity() == 0 ? 1 : vector_.capacity()*2;
+  size_t capacity = vector_.capacity() == 0 ? 5 : vector_.capacity()*2;
   new_vector.reserve(capacity);
-  for (size_t i = 0; i < capacity; ++i) {
+  for (size_t i = 0; i < new_vector.capacity(); ++i) {
     new_vector.push_back({K(), V(), true, false});
   }
+  size_ = 0;
   for (size_t i = 0; i < vector_.capacity(); ++i) {
     if (!vector_[i].is_empty) {
       add_to_vector(vector_[i].key, vector_[i].value, new_vector);
@@ -156,7 +158,7 @@ bool hash_map<K, V, H>::add(K const &key, V const &value) {
 template <typename K, typename V, typename H>
 bool hash_map<K, V, H>::is_overloaded() const {
   if (capacity() == 0) return true;
-  return size()/capacity() >= OVERLOAD_COEF;
+  return (float)size()/(float)capacity() >= OVERLOAD_COEF;
 }
 
 template <typename K, typename V, typename H>
